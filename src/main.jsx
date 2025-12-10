@@ -1,0 +1,16 @@
+// src/index.js
+import React, { useEffect } from "react";
+import ReactDOM from "react-dom/client";
+// import { BrowserRouter } from "react-router-dom";
+
+import "./index.css";
+import App from "./App";
+
+// ────── RENDER APP ──────
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    {/* <BrowserRouter> */}
+      <App />
+    {/* </BrowserRouter> */}
+  </React.StrictMode>
+);
