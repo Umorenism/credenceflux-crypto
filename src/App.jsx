@@ -55,12 +55,20 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import Home from "./components/pages/Home";
 import Wallet from "./components/pages/Wallet";
-import Settings from "./components/pages/Settings";
+
 import Signup from "./components/pages/Signup";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import React from "react";
 import NotFound from "./components/pages/PageNotFound";
 import GetStarted from "./components/pages/GetStaretd";
+import Withdrawal from "./components/pages/Withdrawal";
+import TradingRecords from "./components/pages/TradingRecords";
+import Transactions from "./components/pages/Transaction";
+import Trade from "./components/pages/Trade";
+import RecentTrades from "./components/pages/RecentTrades";
+import JoinTrade from "./components/pages/JoinTrade";
+import Referrals from "./components/pages/Referrals";
+import Support from "./components/pages/Support";
 
 function App() {
   return (
@@ -73,9 +81,9 @@ function App() {
         {/* PROTECTED DASHBOARD ROUTES */}
         <Route
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <DashboardLayout />
-             </ProtectedRoute>
+            //  </ProtectedRoute>
           }
         >
           {/* Redirect root "/" to "/home" */}
@@ -84,7 +92,14 @@ function App() {
           {/* Nested routes inside DashboardLayout */}
           <Route path="/home" element={<Home />} />
           <Route path="/wallet" element={<Wallet />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/withdraw" element={<Withdrawal/>} />
+          <Route path="/trading-records" element={<TradingRecords/>} />
+          <Route path="/transactions" element={<Transactions/>} />
+          <Route path="/trade" element={<Trade/>} />
+          <Route path="/recent-trades" element={<RecentTrades/>} />
+          <Route path="/join-trade" element={<JoinTrade/>} />
+          <Route path="/refer" element={<Referrals/>} />
+          <Route path="/support" element={<Support/>} />
         </Route>
 
         {/* 404 PAGE */}

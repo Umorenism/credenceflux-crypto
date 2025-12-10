@@ -10,7 +10,7 @@ export default function DashboardLayout() {
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-950">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />
 
