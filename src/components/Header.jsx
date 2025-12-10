@@ -65,7 +65,7 @@ export default function Header({ toggleSidebar }) {
 
         {/* Mobile Menu Toggle */}
         <motion.button
-          className="md:hidden p-2 mr-5 rounded-lg border border-cyan-700 text-cyan-400 hover:bg-cyan-800/30"
+          className="md:hidden p-2 mr-1  rounded-lg border border-cyan-700 text-cyan-400 hover:bg-cyan-800/30"
           onClick={toggleSidebar}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
