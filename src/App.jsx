@@ -73,9 +73,9 @@ function App() {
         {/* PROTECTED DASHBOARD ROUTES */}
         <Route
           element={
-            // <ProtectedRoute>
+            <ProtectedRoute>
               <DashboardLayout />
-            // </ProtectedRoute>
+             </ProtectedRoute>
           }
         >
           {/* Redirect root "/" to "/home" */}

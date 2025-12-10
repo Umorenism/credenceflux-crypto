@@ -91,7 +91,7 @@ export default function Sidebar({ isOpen, closeSidebar }) {
       )}
 
       <aside
-  className={`fixed md:static top-0 left-0 h-full w-64 bg-white shadow-lg z-30 transform transition-transform duration-300
+  className={`fixed md:static top-0 left-0 h-full w-64 bg-white min-h-screen shadow-lg z-30 transform transition-transform duration-300
   ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
 >
         <div className="p-6">
