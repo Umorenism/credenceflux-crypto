@@ -413,15 +413,15 @@ export default function Wallet() {
                     boxShadow: `0 0 50px rgba(${btn.glow === 'cyan' ? '0,255,255' : '255,0,255'}, 0.6)`
                   }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative p-8 rounded-3xl bg-gradient-to-br ${btn.color} font-extrabold text-2xl shadow-2xl overflow-hidden group`}
+                  className={`relative p-3 rounded-3xl bg-gradient-to-br ${btn.color} font-extrabold text-2xl shadow-2xl overflow-hidden group`}
                 >
                   <motion.div
                     className="absolute inset-0 bg-white opacity-0 group-hover:opacity-30"
                     animate={{ x: ["-100%", "100%"] }}
                     transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
                   />
-                  <btn.icon className="w-12 h-12 mx-auto mb-3" />
-                  <span className="relative z-10">{btn.label}</span>
+                  <btn.icon className="w-5 h-5 mx-auto mb-3 sm:h-10 sm:w-10" />
+                  <span className="relative z-10 text-sm">{btn.label}</span>
                   <motion.div
                     className="absolute -inset-2 bg-white opacity-0 blur-xl"
                     animate={{ opacity: [0, 0.3, 0] }}
