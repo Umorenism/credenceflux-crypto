@@ -244,7 +244,8 @@ export default function Home() {
           className="bg-black/50 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-cyan-500/40 shadow-lg shadow-cyan-500/20"
         >
           <p className="text-cyan-300 text-sm sm:text-base">
-            🔥 New Pair Alert on Starbiit! 🚀 Graph AI / Pyth Network / Codatta now live after 48hrs of stable valuation. Grab & trade now! 📈
+            🔥 Pair alert on Credenceflux 
+BTC/Usdt, 48 hrs of stable ROI,
           </p>
           <motion.div
             className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400"

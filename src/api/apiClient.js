@@ -9,7 +9,7 @@
 // src/api/apiClient.js
 import axios from "axios";
 
-const base_url = "https://backend.veloxcapitalmarkets.ai";
+const base_url = "https://credenceflux.com";
 
 export const apiClient = axios.create({
   baseURL: base_url,

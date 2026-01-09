@@ -1,77 +1,170 @@
-import React, { useState } from "react";
-import { FiMenu, FiBell } from "react-icons/fi";
+
+import React, { useState, useRef, useEffect } from "react";
+import { FiMenu, FiBell, FiUser, FiLogOut } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Header({ toggleSidebar }) {
-  const [notifications, setNotifications] = useState([
+  const navigate = useNavigate();
+
+  const [notifications] = useState([
     "New trade executed",
     "Wallet deposit received",
     "Security alert: login from new device",
   ]);
-  const [showDropdown, setShowDropdown] = useState(false);
+
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const notifRef = useRef(null);
+  const userRef = useRef(null);
+
+  /* ----------------------------------
+   Close dropdowns on outside click
+  ---------------------------------- */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+      if (userRef.current && !userRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ----------------------------------
+   Logout Handler (API Integrated)
+  ---------------------------------- */
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      navigate("/signup");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      navigate("/signup"); // fail-safe
+    }
+  };
 
   return (
-    <header className="w-full bg-black/90 backdrop-blur-md shadow-lg px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-      {/* Left - Logo / Title */}
-      <motion.h1
-        className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 tracking-tight"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        CREDENCEFLUX
-      </motion.h1>
+    <header className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-cyan-900/40">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3">
 
-      {/* Right - Actions */}
-      <div className="flex items-center gap-6 relative">
-        {/* Notifications */}
-        <div className="relative">
+        {/* Logo */}
+        <motion.h1
+          className="text-xl md:text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          CREDENCEFLUX
+        </motion.h1>
+
+        {/* Actions */}
+        <div className="flex items-center gap-4">
+
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
+            <motion.button
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowUserMenu(false);
+              }}
+              className="relative p-2 rounded-full bg-gray-900 hover:bg-gray-800 text-cyan-400"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiBell size={20} />
+              {notifications.length > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+              )}
+            </motion.button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="absolute right-0 mt-3 w-72 rounded-xl bg-[#0b0b0b] border border-cyan-800 shadow-xl overflow-hidden"
+                >
+                  <div className="px-4 py-2 text-sm font-semibold text-cyan-400 border-b border-cyan-900">
+                    Notifications
+                  </div>
+                  <ul className="divide-y divide-gray-800">
+                    {notifications.map((note, i) => (
+                      <li
+                        key={i}
+                        className="px-4 py-3 text-sm text-gray-300 hover:bg-cyan-900/20 cursor-pointer"
+                      >
+                        {note}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* User Menu */}
+          <div className="relative" ref={userRef}>
+            <motion.button
+              onClick={() => {
+                setShowUserMenu(!showUserMenu);
+                setShowNotifications(false);
+              }}
+              className="p-2 rounded-full bg-gray-900 hover:bg-gray-800 text-cyan-400"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiUser size={20} />
+            </motion.button>
+
+            <AnimatePresence>
+              {showUserMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="absolute right-0 mt-3 w-56 rounded-xl bg-[#0b0b0b] border border-cyan-800 shadow-xl"
+                >
+                  <ul className="py-2 text-sm">
+                    <li
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 cursor-pointer"
+                    >
+                      <FiLogOut />
+                      Logout
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile Menu */}
           <motion.button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="p-2 rounded-full bg-gray-900 hover:bg-gray-800 text-cyan-400 relative"
+            className="md:hidden p-2 rounded-lg border border-cyan-700 text-cyan-400 hover:bg-cyan-800/20"
+            onClick={toggleSidebar}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <FiBell size={22} />
-            {notifications.length > 0 && (
-              <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-black animate-pulse"></span>
-            )}
+            <FiMenu size={22} />
           </motion.button>
-
-          {/* Notification Dropdown */}
-          <AnimatePresence>
-            {showDropdown && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="absolute right-0 mt-2 w-64 bg-[#111111] border border-cyan-700 rounded-xl shadow-lg overflow-hidden z-50"
-              >
-                <ul className="divide-y divide-gray-700">
-                  {notifications.map((note, index) => (
-                    <li
-                      key={index}
-                      className="px-4 py-3 hover:bg-cyan-900/20 cursor-pointer text-gray-200"
-                    >
-                      {note}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
-
-        {/* Mobile Menu Toggle */}
-        <motion.button
-          className="md:hidden p-2 mr-1  rounded-lg border border-cyan-700 text-cyan-400 hover:bg-cyan-800/30"
-          onClick={toggleSidebar}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FiMenu size={22} />
-        </motion.button>
       </div>
     </header>
   );
