@@ -72,6 +72,7 @@ import Support from "./components/pages/Support";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import TwoFASetup from "./components/pages/TwoFASetup";
+import Investments from "./components/pages/Investments";
 
 function App() {
   return (
@@ -87,9 +88,9 @@ function App() {
         {/* PROTECTED DASHBOARD ROUTES */}
         <Route
           element={
-            //  <ProtectedRoute>
+              // <ProtectedRoute>
               <DashboardLayout />
-            // </ProtectedRoute>
+            //  </ProtectedRoute>
           }
         >
           {/* Redirect root "/" to "/home" */}
@@ -101,6 +102,7 @@ function App() {
           <Route path="/withdraw" element={<Withdrawal/>} />
           <Route path="/trading-records" element={<TradingRecords/>} />
           <Route path="/transactions" element={<Transactions/>} />
+          <Route path="/investments" element={<Investments/>} />
           <Route path="/trade" element={<Trade/>} />
           <Route path="/recent-trades" element={<RecentTrades/>} />
           <Route path="/join-trade" element={<JoinTrade/>} />

@@ -1,17 +1,34 @@
-// src/api/depositApi.js
 import { apiClient } from "./apiClient";
 
-// Get list of supported cryptocurrencies for deposit
-export const getSupportedWallets = () => {
-  return apiClient.get("/api/deposite/wallets/");
+/**
+ * Create a new deposit payment request
+ * POST /api/deposits
+ * body: { amount: number }
+ */
+export const createDeposit = (amount) => {
+  return apiClient.post("/api/deposits", { amount });
 };
 
-// Get deposit wallet address for a specific cryptocurrency
-export const getDepositAddress = (cryptocurrency) => {
-  return apiClient.get(`/api/deposit/wallet-address/${cryptocurrency}`);
+/**
+ * Get deposit history of the current user
+ * GET /api/deposits
+ */
+export const getDepositHistory = () => {
+  return apiClient.get("/api/deposits");
 };
 
-// Check current balance for a cryptocurrency
-export const checkBalance = (cryptocurrency) => {
-  return apiClient.get(`/api/deposite/check-balance/${cryptocurrency}`);
+/**
+ * Check status of a specific deposit payment
+ * GET /api/deposits/check/:paymentId
+ */
+export const checkDepositStatus = (paymentId) => {
+  return apiClient.get(`/api/deposits/check/${paymentId}`);
+};
+
+/**
+ * Get details of a single deposit
+ * GET /api/deposits/:id
+ */
+export const getDepositById = (id) => {
+  return apiClient.get(`/api/deposits/${id}`);
 };

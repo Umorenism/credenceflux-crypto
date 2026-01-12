@@ -70,6 +70,7 @@
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.29.0",
     "react-select": "^5.10.2",
+    "react-share": "^5.2.2",
     "react-slick": "^0.30.3",
     "react-spinners": "^0.14.1",
     "react-spinning-wheel": "^2.1.0",

@@ -82,7 +82,7 @@ export default function TwoFASetup() {
         {qrCode ? (
           <div className="flex justify-center mb-8">
             <div className="p-4 bg-white rounded-xl">
-              <QRCode value={qrCode} size={200} />
+              <QRCode value={qrCode} size={100} />
             </div>
           </div>
         ) : (
@@ -107,8 +107,8 @@ export default function TwoFASetup() {
           </div>
         )}
 
-        <form onSubmit={handleVerify} className="space-y-6">
-          <div className="flex justify-center gap-3">
+        <form onSubmit={handleVerify} className="space-y-4">
+          <div className="flex justify-center gap-3 p-2">
             {[0,1,2,3,4,5].map((i) => (
               <input
                 key={i}
@@ -117,7 +117,7 @@ export default function TwoFASetup() {
                 maxLength={1}
                 value={code[i]}
                 onChange={(e) => handleCodeChange(i, e.target.value)}
-                className="w-12 h-12 text-2xl text-center bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:border-cyan-500"
+                className="w-10 h-10 text-2xl text-center bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:border-cyan-500"
                 required
               />
             ))}

@@ -463,393 +463,271 @@
 
 
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  WalletIcon, 
-  QrCodeIcon, 
+import {
+  WalletIcon,
+  QrCodeIcon,
   DocumentDuplicateIcon,
   ArrowPathIcon,
-  SparklesIcon,
-  ShieldCheckIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  ClockIcon,
 } from '@heroicons/react/24/solid';
 import QRCode from 'react-qr-code';
-import { Html5QrcodeScanner } from 'html5-qrcode';
 
-import { getSupportedWallets, getDepositAddress, checkBalance } from '../../api/depositapi';
+import {
+  createDeposit,
+  getDepositHistory,
+  checkDepositStatus,
+} from '../../api/depositapi';
 
-export default function Wallet() {
-  const [supportedCryptos, setSupportedCryptos] = useState([]);
-  const [selectedCrypto, setSelectedCrypto] = useState('ETH');
-  const [walletAddress, setWalletAddress] = useState('');
-  const [balance, setBalance] = useState('0.000');
-  const [addressLoading, setAddressLoading] = useState(false);
-  const [balanceLoading, setBalanceLoading] = useState(false);
+export default function Deposit() {
+  const [amount, setAmount] = useState('');
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositResult, setDepositResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
-  const [qrVisible, setQrVisible] = useState(false);
-  const [scanModalOpen, setScanModalOpen] = useState(false);
-  const [scanResult, setScanResult] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [polling, setPolling] = useState(false);
 
-  const scannerRef = useRef(null);
-
-  const shortenAddress = (addr) => addr ? `${addr.slice(0, 10)}...${addr.slice(-8)}` : 'Loading...';
-
-  // Fetch supported cryptocurrencies
   useEffect(() => {
-    const fetchSupportedCryptos = async () => {
-      try {
-        const res = await getSupportedWallets();
-        const cryptos = res.data || ['ETH', 'BTC', 'USDT'];
-        setSupportedCryptos(cryptos);
-        if (cryptos.length > 0) setSelectedCrypto(cryptos[0]);
-      } catch (err) {
-        console.error("Failed to load supported wallets:", err);
-        setSupportedCryptos(['ETH', 'BTC', 'USDT']);
-      }
-    };
-    fetchSupportedCryptos();
+    loadHistory();
   }, []);
 
-  // Load address & balance + auto-refresh every 30s
-  useEffect(() => {
-    if (!selectedCrypto) return;
-
-    const loadData = async () => {
-      setAddressLoading(true);
-      setBalanceLoading(true);
-
-      try {
-        const [addrRes, balRes] = await Promise.all([
-          getDepositAddress(selectedCrypto),
-          checkBalance(selectedCrypto)
-        ]);
-
-        setWalletAddress(addrRes.data.walletAddress || addrRes.data.address || '');
-        setBalance(parseFloat(balRes.data.balance || 0).toFixed(6));
-      } catch (err) {
-        console.error("Error loading deposit data:", err);
-        setWalletAddress('');
-        setBalance('0.000');
-      } finally {
-        setAddressLoading(false);
-        setBalanceLoading(false);
-      }
-    };
-
-    loadData();
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await checkBalance(selectedCrypto);
-        setBalance(parseFloat(res.data.balance || 0).toFixed(6));
-      } catch (err) {
-        // Silent fail
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [selectedCrypto]);
-
-  const copyToClipboard = (text = walletAddress) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const manualRefresh = async () => {
-    setIsRefreshing(true);
+  const loadHistory = async () => {
     try {
-      const res = await checkBalance(selectedCrypto);
-      setBalance(parseFloat(res.data.balance || 0).toFixed(6));
-    } catch (err) {}
-    setTimeout(() => setIsRefreshing(false), 800);
+      setHistoryLoading(true);
+      const res = await getDepositHistory();
+      setHistory(res.data || []);
+    } catch (err) {
+      console.error(err);
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
-  const onScanSuccess = (decodedText) => {
-    setScanResult(decodedText);
-    copyToClipboard(decodedText);
-    setScanModalOpen(false);
-  };
-
-  const onScanError = (error) => {
-    // Silent errors for smooth UX
-    console.warn(error);
-  };
-
-  // Initialize / Cleanup QR Scanner when modal opens/closes
-  useEffect(() => {
-    if (scanModalOpen) {
-      const config = {
-        fps: 10,
-        qrbox: { width: 300, height: 300 },
-        aspectRatio: 1,
-        disableFlip: false,
-      };
-
-      const scanner = new Html5QrcodeScanner(
-        "qr-reader",
-        config,
-        /* verbose= */ false
-      );
-
-      scanner.render(onScanSuccess, onScanError);
-      scannerRef.current = scanner;
-    } else {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch((error) => {
-          console.error("Failed to clear scanner", error);
-        });
-        scannerRef.current = null;
-      }
+  const handleCreateDeposit = async (e) => {
+    e.preventDefault();
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setError('Please enter a valid amount greater than 0');
+      return;
     }
 
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
+    setError('');
+    setMessage('');
+    setDepositLoading(true);
+
+    try {
+      const res = await createDeposit(numAmount);
+      const data = res.data;
+
+      setDepositResult(data);
+      setMessage('Deposit request created! Please send funds now.');
+      setAmount('');
+
+      loadHistory();
+
+      if (data?.paymentId) {
+        startPolling(data.paymentId);
       }
-    };
-  }, [scanModalOpen]);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to create deposit request.';
+      setError(msg);
+    } finally {
+      setDepositLoading(false);
+    }
+  };
+
+  const startPolling = (paymentId) => {
+    setPolling(true);
+    const interval = setInterval(async () => {
+      try {
+        const res = await checkDepositStatus(paymentId);
+        const status = res.data?.status;
+
+        setDepositResult((prev) => ({ ...prev, status }));
+
+        if (status === 'completed' || status === 'confirmed') {
+          clearInterval(interval);
+          setPolling(false);
+          setMessage('Deposit confirmed! Balance updated.');
+          loadHistory();
+        }
+      } catch (err) {
+        console.warn('Polling error', err);
+      }
+    }, 8000);
+
+    return () => clearInterval(interval);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
+  const shorten = (str) => (str ? `${str.slice(0, 8)}...${str.slice(-6)}` : '');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Dark Crypto Robotic Background Animation */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-900 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-900 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse animation-delay-2000" />
-
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-3xl opacity-20"
-            initial={{ x: Math.random() * window.innerWidth, y: window.innerHeight + 100 }}
-            animate={{
-              y: -200,
-              x: Math.random() * window.innerWidth,
-            }}
-            transition={{
-              duration: 20 + Math.random() * 15,
-              repeat: Infinity,
-              ease: "linear",
-              delay: Math.random() * 15,
-            }}
-          >
-            {i % 3 === 0 ? '₿' : i % 3 === 1 ? 'Ξ' : '◊'}
-          </motion.div>
-        ))}
-
-        <div className="absolute inset-0 opacity-5 bg-gradient-to-r from-transparent via-white/10 to-transparent" 
-             style={{ backgroundImage: 'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)',
-                      backgroundSize: '50px 50px' }} />
-      </div>
-
-      {/* Main Glass Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-2xl"
-      >
-        <div className="bg-black/30 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-purple-900/20 to-cyan-900/20 p-10 text-center border-b border-white/10">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              className="inline-block mb-4"
-            >
-              <WalletIcon className="w-16 h-16 text-purple-400" />
-            </motion.div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              Deposit Wallet
+    <div className="min-h-screen bg-slate-950 text-white p-6 relative">
+      <div className="max-w-3xl mx-auto space-y-10 relative z-10">
+        {/* Create Deposit Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-black/40 backdrop-blur-xl rounded-3xl border border-orange-600/30 p-8 shadow-2xl"
+        >
+          <div className="text-center mb-8">
+            <WalletIcon className="w-16 h-16 mx-auto text-orange-400 mb-4" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+              Deposit Funds
             </h1>
-            <div className="flex items-center justify-center gap-3 mt-4">
-              <ShieldCheckIcon className="w-6 h-6 text-emerald-500" />
-              <p className="text-emerald-400 text-sm font-medium">Secure • Encrypted • Real-time</p>
-            </div>
+            <p className="text-gray-400 mt-2">USDT (BSC)</p>
           </div>
 
-          {/* Body */}
-          <div className="p-10 space-y-10">
-            {/* Crypto Selector */}
+          <form onSubmit={handleCreateDeposit} className="space-y-6">
             <div>
-              <label className="text-sm font-medium text-gray-400 uppercase tracking-wider">Cryptocurrency</label>
-              <select
-                value={selectedCrypto}
-                onChange={(e) => setSelectedCrypto(e.target.value)}
-                className="w-full mt-3 px-6 py-4 bg-white/5 border border-white/20 rounded-2xl text-lg font-semibold focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition"
-              >
-                {supportedCryptos.map((crypto) => (
-                  <option key={crypto} value={crypto} className="bg-slate-900">
-                    {crypto}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-orange-300/90 mb-2">
+                Amount (USDT)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="1"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="10.00"
+                className="w-full px-5 py-4 bg-slate-900 border border-orange-700/40 rounded-xl text-white placeholder-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 outline-none transition"
+                disabled={depositLoading}
+                required
+              />
             </div>
 
-            {/* Balance */}
-            <div className="text-center py-8">
-              <p className="text-gray-500 text-sm uppercase tracking-widest mb-4">Available Balance</p>
-              <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 4, repeat: Infinity }}>
-                <p className="text-7xl font-extrabold text-white">
-                  {balanceLoading ? '⋯' : balance}
-                </p>
-                <p className="text-4xl font-bold text-purple-400 mt-2">{selectedCrypto}</p>
-              </motion.div>
-              <p className="text-gray-600 text-sm mt-4">Auto-updates every 30 seconds</p>
-            </div>
-
-            {/* Deposit Address Section */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10">
-              <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-6">Deposit Address</p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
-                <p className="font-mono text-lg text-cyan-300 break-all text-center sm:text-left">
-                  {addressLoading ? 'Generating address...' : shortenAddress(walletAddress)}
-                </p>
-
-                <div className="flex gap-4">
-                  {/* Show Your QR Code */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setQrVisible(!qrVisible)}
-                    className="p-4 bg-purple-700/50 backdrop-blur rounded-xl border border-purple-500/30 hover:bg-purple-700/70 transition"
-                    title="Show Deposit QR Code"
-                  >
-                    <QrCodeIcon className="w-7 h-7 text-white" />
-                  </motion.button>
-
-                  {/* Scan QR Code Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setScanModalOpen(true)}
-                    className="p-4 bg-cyan-700/50 backdrop-blur rounded-xl border border-cyan-500/30 hover:bg-cyan-700/70 transition"
-                    title="Scan QR Code"
-                  >
-                    <QrCodeIcon className="w-7 h-7 text-white" />
-                  </motion.button>
-
-                  {/* Copy Address */}
-                  <motion.button
-                    whileHover={{ scale: 1.1, rotate: 360 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => copyToClipboard()}
-                    className="p-4 bg-gradient-to-br from-cyan-700 to-blue-700/50 backdrop-blur rounded-xl border border-cyan-500/30"
-                    title="Copy Address"
-                  >
-                    {copied ? <CheckCircleIcon className="w-7 h-7 text-emerald-400" /> : <DocumentDuplicateIcon className="w-7 h-7 text-white" />}
-                  </motion.button>
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {qrVisible && walletAddress && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="text-center mt-8">
-                      <div className="inline-block p-8 bg-white rounded-3xl shadow-2xl">
-                        <QRCode value={walletAddress} size={220} level="H" />
-                      </div>
-                      <p className="text-gray-500 text-sm mt-6">Scan this QR to deposit {selectedCrypto}</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-white/10 bg-white/5 py-5 text-center">
-            <motion.div animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 3, repeat: Infinity }}>
-              <div className="flex items-center justify-center gap-3">
-                <SparklesIcon className="w-5 h-5 text-yellow-500" />
-                <span className="text-yellow-400 text-sm font-medium">
-                  Secure Connection • Live Balance Sync
-                </span>
-                <SparklesIcon className="w-5 h-5 text-yellow-500" />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-8 right-8 flex flex-col gap-4 z-20">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={manualRefresh}
-          className="p-4 bg-gradient-to-br from-purple-700 to-pink-700 rounded-full shadow-2xl backdrop-blur border border-white/20"
-        >
-          <ArrowPathIcon className={`w-6 h-6 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => window.location.href = '/transactions'}
-          className="p-4 bg-gradient-to-br from-cyan-700 to-blue-700 rounded-full shadow-2xl backdrop-blur border border-white/20"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 0 01-2-2z" />
-          </svg>
-        </motion.button>
-      </div>
-
-      {/* QR Code Scanner Modal */}
-      <AnimatePresence>
-        {scanModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-6"
-            onClick={() => setScanModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-black/40 backdrop-blur-2xl rounded-3xl p-8 max-w-lg w-full border border-white/20 relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="submit"
+              disabled={depositLoading || !amount || parseFloat(amount) <= 0}
+              className={`w-full py-4 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-semibold rounded-xl transition transform hover:scale-[1.02] shadow-lg ${
+                depositLoading ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-cyan-400">Scan QR Code</h3>
-                <button onClick={() => setScanModalOpen(false)} className="text-gray-400 hover:text-white">
-                  <XMarkIcon className="w-8 h-8" />
-                </button>
-              </div>
+              {depositLoading ? 'Creating...' : 'Create Deposit Request'}
+            </button>
+          </form>
 
-              {/* html5-qrcode scanner container */}
-              <div id="qr-reader" className="w-full rounded-2xl overflow-hidden bg-black" style={{ maxWidth: '500px', margin: '0 auto' }} />
+          {error && <p className="mt-4 text-red-400 text-center font-medium">{error}</p>}
+          {message && <p className="mt-4 text-orange-300 text-center font-medium">{message}</p>}
 
-              <p className="text-center text-gray-400 mt-6 text-sm">
-                Point your camera at a QR code containing a wallet address
-              </p>
+          {/* Payment Instructions / QR */}
+          <AnimatePresence>
+            {depositResult && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-8 overflow-hidden"
+              >
+                <div className="bg-slate-900/70 p-6 rounded-2xl border border-orange-600/30">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-orange-300">Payment Details</h3>
+                    <div className="flex items-center gap-2">
+                      {polling && <ClockIcon className="w-5 h-5 text-amber-400 animate-pulse" />}
+                      <span className="text-sm capitalize text-gray-300">
+                        {depositResult.status || 'pending'}
+                      </span>
+                    </div>
+                  </div>
 
-              {scanResult && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-emerald-400 mt-4 font-mono text-sm break-all bg-black/50 p-4 rounded-xl"
+                  {depositResult.address && (
+                    <>
+                      <p className="text-sm text-gray-400 mb-2">Send to address (BSC):</p>
+                      <div className="flex items-center gap-3 bg-black/40 p-4 rounded-xl border border-orange-800/30">
+                        <p className="font-mono text-orange-300 break-all flex-1">
+                          {shorten(depositResult.address)}
+                        </p>
+                        <button
+                          onClick={() => copyToClipboard(depositResult.address)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          {copied ? (
+                            <CheckCircleIcon className="w-6 h-6 text-orange-400" />
+                          ) : (
+                            <DocumentDuplicateIcon className="w-6 h-6 text-gray-300" />
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="mt-6 flex justify-center">
+                        <div className="bg-white p-4 rounded-2xl shadow-2xl">
+                          <QRCode value={depositResult.address} size={180} level="H" />
+                        </div>
+                      </div>
+                      <p className="text-center text-sm text-gray-500 mt-3">
+                        Scan to send USDT (BSC)
+                      </p>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Deposit History */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-black/40 backdrop-blur-xl rounded-3xl border border-orange-600/30 p-8"
+        >
+          <h2 className="text-2xl font-semibold mb-6 text-orange-300">Deposit History</h2>
+
+          {historyLoading ? (
+            <p className="text-gray-400 text-center py-8">Loading...</p>
+          ) : history.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No deposits yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {history.map((dep) => (
+                <div
+                  key={dep.id || dep.paymentId}
+                  className="p-5 bg-slate-900/60 rounded-xl border border-orange-800/30 flex justify-between items-center"
                 >
-                  ✓ Scanned & Copied: {scanResult}
-                </motion.p>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <div>
+                    <p className="font-medium text-white">
+                      {dep.amount} USDT
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {dep.address ? shorten(dep.address) : '—'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={`font-semibold ${
+                        dep.status === 'completed' || dep.status === 'confirmed'
+                          ? 'text-orange-400'
+                          : dep.status === 'pending'
+                          ? 'text-amber-400'
+                          : 'text-red-400'
+                      }`}
+                    >
+                      {dep.status?.toUpperCase() || 'PENDING'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {dep.createdAt ? new Date(dep.createdAt).toLocaleString() : '—'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }
