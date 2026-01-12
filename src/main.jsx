@@ -5,12 +5,19 @@ import ReactDOM from "react-dom/client";
 
 import "./index.css";
 import App from "./App";
+import { UserProvider } from "./components/ui/UserContext";
+import { ThemeProvider } from "./components/ui/ThemeContext";
 
 // ────── RENDER APP ──────
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <ThemeProvider>
     {/* <BrowserRouter> */}
-      <App />
+    <UserProvider>
+ <App />
+    </UserProvider>
+    </ThemeProvider>
+     
     {/* </BrowserRouter> */}
   </React.StrictMode>
 );

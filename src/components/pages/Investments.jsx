@@ -1,37 +1,12 @@
+// src/pages/Investments.jsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { investmentService } from "../../api/investmentApi";
-
-// Optional: nice orange palette helpers (you can also put in globals.css)
-const orangePalette = {
-  primary: "orange-600",
-  primaryHover: "orange-500",
-  primaryDark: "orange-700",
-  darkBg: "gray-950",
-  cardBg: "gray-900",
-  accentText: "orange-400",
-  lightText: "gray-300",
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const cardVariants = {
-  hidden: { y: 40, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
-  },
-  hover: { scale: 1.04, transition: { duration: 0.25 } },
-};
+import { useTheme } from "../ui/ThemeContext"; // ← adjust path if needed
 
 export default function Investments() {
+  const { theme, toggleTheme } = useTheme();
+
   const [investments, setInvestments] = useState([]);
   const [stats, setStats] = useState(null);
   const [todayEarnings, setTodayEarnings] = useState(null);
@@ -52,7 +27,7 @@ export default function Investments() {
         setStats(statsRes);
         setTodayEarnings(todayRes);
       } catch (err) {
-        setError("Failed to load investment data");
+        setError("Failed to load investment data. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -64,11 +39,11 @@ export default function Investments() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full"
+          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+          className="w-14 h-14 border-4 border-orange-500 border-t-transparent rounded-full"
         />
       </div>
     );
@@ -76,125 +51,186 @@ export default function Investments() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <p className="text-red-400 text-xl">{error}</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <p className="text-red-600 dark:text-red-400 text-xl font-medium mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-medium transition"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-${orangePalette.darkBg} text-white p-6`}>
-      <motion.h1
+    <div
+      className={`min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300 p-5 sm:p-6 lg:p-8`}
+    >
+     
+      {/* Deposit to Trade CTA - prominent at top */}
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-4xl font-bold mb-8 text-center md:text-left text-orange-400"
+        className="max-w-5xl mx-auto mb-10"
       >
-        Investments Dashboard
-      </motion.h1>
-
-      {/* Quick Stats Cards */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
-      >
-        <motion.div
-          variants={cardVariants}
-          whileHover="hover"
-          className={`bg-${orangePalette.cardBg} p-6 rounded-xl shadow-xl border border-orange-900/30`}
-        >
-          <h3 className="text-lg font-semibold text-gray-400">Total Earnings</h3>
-          <p className={`text-3xl font-bold text-${orangePalette.accentText}`}>
-            {stats?.totalEarnings ?? "—"} {/* assume has totalEarnings, adjust field */}
+        <div className="bg-gradient-to-r from-orange-600 to-orange-500 dark:from-orange-700 dark:to-orange-600 rounded-2xl p-6 sm:p-8 shadow-xl text-white text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">Ready to Start Trading?</h2>
+          <p className="text-orange-100 dark:text-orange-200 mb-6 max-w-2xl mx-auto">
+            Deposit funds now to activate AI-powered trading plans and start earning
           </p>
-        </motion.div>
-
-        <motion.div
-          variants={cardVariants}
-          whileHover="hover"
-          className={`bg-${orangePalette.cardBg} p-6 rounded-xl shadow-xl border border-orange-900/30`}
-        >
-          <h3 className="text-lg font-semibold text-gray-400">Today's Earnings</h3>
-          <p className={`text-3xl font-bold text-${orangePalette.accentText}`}>
-            {todayEarnings?.amount ?? "0.00"}
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={cardVariants}
-          whileHover="hover"
-          className={`bg-${orangePalette.cardBg} p-6 rounded-xl shadow-xl border border-orange-900/30`}
-        >
-          <h3 className="text-lg font-semibold text-gray-400">Active Plans</h3>
-          <p className={`text-3xl font-bold text-${orangePalette.accentText}`}>
-            {investments?.filter(i => i.status === "active")?.length ?? 0}
-          </p>
-        </motion.div>
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-10 py-4 bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 font-bold text-lg rounded-xl shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto"
+            onClick={() => {
+              // Replace with your actual deposit route / modal trigger
+              window.location.href = "/dashboard/deposit";
+            }}
+          >
+            <BanknotesIcon className="w-6 h-6" />
+            Deposit to Trade Now
+          </motion.button>
+        </div>
       </motion.div>
 
-      {/* Investment Plans List */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        <h2 className="text-2xl font-semibold mb-6 text-orange-300">
-          Your Investment Plans
-        </h2>
+      <div className="max-w-5xl mx-auto">
+        <motion.h1
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl sm:text-4xl font-bold mb-8 text-orange-600 dark:text-orange-400 text-center md:text-left"
+        >
+          Investments Dashboard
+        </motion.h1>
 
-        {investments.length === 0 ? (
-          <p className="text-gray-400 text-center py-10">
-            No investments found. Start investing today!
-          </p>
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {investments.map((inv) => (
-              <motion.div
-                key={inv.id}
-                variants={cardVariants}
-                whileHover="hover"
-                className={`bg-${orangePalette.cardBg} rounded-xl overflow-hidden shadow-2xl border border-orange-900/40 hover:border-orange-600/60 transition-colors`}
+        {/* Quick Stats */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
+          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-12"
+        >
+          {[
+            {
+              title: "Total Earnings",
+              value: stats?.totalEarnings ?? "—",
+              icon: BanknotesIcon,
+            },
+            {
+              title: "Today's Earnings",
+              value: todayEarnings?.amount ?? "0.00",
+              icon: SparklesIcon,
+            },
+            {
+              title: "Active Plans",
+              value: investments?.filter((i) => i.status === "active")?.length ?? 0,
+              icon: CpuChipIcon,
+            },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              variants={{
+                hidden: { y: 30, opacity: 0 },
+                visible: { y: 0, opacity: 1 },
+              }}
+              whileHover={{ y: -6, transition: { duration: 0.25 } }}
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-xl p-6 text-center transition-all"
+            >
+              <item.icon className="w-10 h-10 mx-auto mb-4 text-orange-600 dark:text-orange-500" />
+              <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-1">
+                {item.title}
+              </h3>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                {item.value}
+                {item.title.includes("Earnings") && " USDT"}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Your Investment Plans */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
+            Your Investment Plans
+          </h2>
+
+          {investments.length === 0 ? (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-10 text-center shadow-md">
+              <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
+                No active investments yet
+              </p>
+              <p className="text-gray-500 dark:text-gray-500 mb-6">
+                Deposit funds and choose a plan to start earning with AI-powered trading
+              </p>
+              <button
+                onClick={() => (window.location.href = "/dashboard/deposit")}
+                className="px-8 py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl shadow-md transition"
               >
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-orange-300 mb-2">
-                    {inv.planName || `Plan #${inv.id}`}
-                  </h3>
-                  <p className="text-gray-400 mb-4">
-                    Invested: {inv.amount} • {inv.date}
-                  </p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-300">Status:</span>
-                    <span
-                      className={
-                        inv.status === "active"
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }
-                    >
-                      {inv.status?.toUpperCase() || "UNKNOWN"}
-                    </span>
-                  </div>
-                </div>
-                <div className={`bg-gradient-to-r from-orange-900/40 to-transparent px-6 py-4 text-right`}>
-                  <button
-                    className={`bg-orange-600 hover:bg-orange-500 text-white px-5 py-2 rounded-lg font-medium transition-colors`}
-                  >
-                    View Earnings
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </motion.section>
+                Deposit & Invest Now
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {investments.map((inv) => (
+                <motion.div
+                  key={inv.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                  className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-xl overflow-hidden transition-all"
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      {inv.planName || `Plan #${inv.id}`}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-5">
+                      Invested: {inv.amount} USDT • {inv.date || "—"}
+                    </p>
 
-      {/* You can add more sections: Create Investment form, Earnings History table, etc. */}
+                    <div className="flex justify-between items-center text-sm mb-4">
+                      <span className="text-gray-500 dark:text-gray-400">Status</span>
+                      <span
+                        className={`font-semibold px-3 py-1 rounded-full text-xs ${
+                          inv.status === "active"
+                            ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40"
+                            : "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40"
+                        }`}
+                      >
+                        {inv.status?.toUpperCase() || "UNKNOWN"}
+                      </span>
+                    </div>
+
+                    {inv.profit !== undefined && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Current PnL</span>
+                        <span
+                          className={`font-bold ${
+                            inv.profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                          }`}
+                        >
+                          {inv.profit >= 0 ? "+" : ""}${Math.abs(inv.profit).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex justify-end border-t border-gray-200 dark:border-gray-800">
+                    <button className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition shadow-sm">
+                      View Earnings
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.section>
+      </div>
     </div>
   );
 }

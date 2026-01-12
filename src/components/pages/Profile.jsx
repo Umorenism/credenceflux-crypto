@@ -1,20 +1,34 @@
 // src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { UserCircleIcon, EnvelopeIcon, KeyIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, EnvelopeIcon, KeyIcon, ShieldCheckIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/solid';
 import { userService } from '../../api/userApi';
 
 export default function Profile() {
   const [profile, setProfile] = useState({
     fullName: '',
     email: '',
+    phone: '',
+    country: '',
+    avatar: '',
     joined: '',
     kycStatus: 'Not Verified',
   });
 
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ fullName: '', email: '' });
-  const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
+  const [form, setForm] = useState({
+    fullName: '',
+    phone: '',
+    country: '',
+    avatar: '',
+  });
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    
+  });
+
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -25,10 +39,18 @@ export default function Profile() {
         setProfile({
           fullName: data.fullName || 'User',
           email: data.email || '',
+          phone: data.phone || '',
+          country: data.country || '',
+          avatar: data.avatar || '',
           joined: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '',
           kycStatus: data.kycVerified ? 'Verified' : 'Not Verified',
         });
-        setForm({ fullName: data.fullName || '', email: data.email || '' });
+        setForm({
+          fullName: data.fullName || '',
+          phone: data.phone || '',
+          country: data.country || '',
+          avatar: data.avatar || '',
+        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -38,28 +60,45 @@ export default function Profile() {
     loadProfile();
   }, []);
 
-  const handleSaveProfile = async () => {
-    try {
-      await userService.updateProfile(form);
-      setProfile(prev => ({ ...prev, ...form }));
-      setEditMode(false);
-      setMessage('Profile updated successfully');
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      setMessage('Failed to update profile');
-    }
-  };
+ // ... inside handleSaveProfile
+const handleSaveProfile = async () => {
+  try {
+    const updateData = {
+      fullName: form.fullName,
+      phone: form.phone,
+      country: form.country,
+      avatar: form.avatar,
+    };
+
+    await userService.updateProfile(updateData);
+
+    // Update local profile state
+    setProfile(prev => ({ ...prev, ...updateData }));
+    
+    // IMPORTANT: Update global user context
+    const { updateUserProfile } = useUser();   // ← add this line
+    updateUserProfile(updateData);             // ← notify header & other components
+
+    setEditMode(false);
+    setMessage('Profile updated successfully');
+    setTimeout(() => setMessage(''), 4000);
+  } catch (err) {
+    setMessage(err.response?.data?.message || 'Failed to update profile');
+  }
+};
 
   const handleChangePassword = async () => {
     if (passwordForm.newPass !== passwordForm.confirm) {
       setMessage('Passwords do not match');
       return;
     }
+
     try {
       await userService.changePassword({
         currentPassword: passwordForm.current,
         newPassword: passwordForm.newPass,
       });
+
       setPasswordForm({ current: '', newPass: '', confirm: '' });
       setMessage('Password changed successfully');
       setTimeout(() => setMessage(''), 4000);
@@ -94,10 +133,33 @@ export default function Profile() {
           className="bg-gray-900 p-8 rounded-2xl border border-orange-900/50"
         >
           <div className="flex flex-col md:flex-row items-center gap-8 mb-8">
-            <UserCircleIcon className="w-28 h-28 text-orange-500" />
+            {profile.avatar ? (
+              <img
+                src={profile.avatar}
+                alt="Profile"
+                className="w-28 h-28 rounded-full object-cover border-4 border-orange-500/30"
+              />
+            ) : (
+              <UserCircleIcon className="w-28 h-28 text-orange-500" />
+            )}
             <div className="text-center md:text-left">
               <h2 className="text-3xl font-bold text-orange-300">{profile.fullName}</h2>
-              <p className="text-gray-300 mt-1">{profile.email}</p>
+              <p className="text-gray-300 mt-1 flex items-center gap-2 justify-center md:justify-start">
+                <EnvelopeIcon className="w-5 h-5" />
+                {profile.email}
+              </p>
+              {profile.phone && (
+                <p className="text-gray-300 mt-1 flex items-center gap-2 justify-center md:justify-start">
+                  <PhoneIcon className="w-5 h-5" />
+                  {profile.phone}
+                </p>
+              )}
+              {profile.country && (
+                <p className="text-gray-300 mt-1 flex items-center gap-2 justify-center md:justify-start">
+                  <MapPinIcon className="w-5 h-5" />
+                  {profile.country}
+                </p>
+              )}
               <p className="text-sm text-gray-500 mt-2">
                 Member since {profile.joined}
               </p>
@@ -129,15 +191,32 @@ export default function Profile() {
               <input
                 type="text"
                 value={form.fullName}
-                onChange={e => setForm({...form, fullName: e.target.value})}
+                onChange={e => setForm({ ...form, fullName: e.target.value })}
                 placeholder="Full Name"
                 className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
               />
+
               <input
-                type="email"
-                value={form.email}
-                onChange={e => setForm({...form, email: e.target.value})}
-                placeholder="Email"
+                type="tel"
+                value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
+                placeholder="Phone Number"
+                className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
+              />
+
+              <input
+                type="text"
+                value={form.country}
+                onChange={e => setForm({ ...form, country: e.target.value })}
+                placeholder="Country"
+                className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
+              />
+
+              <input
+                type="url"
+                value={form.avatar}
+                onChange={e => setForm({ ...form, avatar: e.target.value })}
+                placeholder="Avatar URL (optional)"
                 className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
               />
 
@@ -159,7 +238,7 @@ export default function Profile() {
           )}
         </motion.div>
 
-        {/* Change Password */}
+        {/* Change Password Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -175,24 +254,18 @@ export default function Profile() {
             <input
               type="password"
               placeholder="Current Password"
-              value={passwordForm.current}
-              onChange={e => setPasswordForm({...passwordForm, current: e.target.value})}
+              value={passwordForm.currentPassword}
+              onChange={e => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
               className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
             />
             <input
               type="password"
               placeholder="New Password"
-              value={passwordForm.newPass}
-              onChange={e => setPasswordForm({...passwordForm, newPass: e.target.value})}
+              value={passwordForm.newPassword}
+              onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
               className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
             />
-            <input
-              type="password"
-              placeholder="Confirm New Password"
-              value={passwordForm.confirm}
-              onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})}
-              className="w-full p-4 bg-gray-800 border border-orange-800 rounded-xl focus:border-orange-500 outline-none"
-            />
+           
 
             <button
               onClick={handleChangePassword}
@@ -207,7 +280,7 @@ export default function Profile() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-lg font-medium text-green-400"
+            className={`text-center text-lg font-medium ${message.includes('success') ? 'text-green-400' : 'text-red-400'}`}
           >
             {message}
           </motion.p>

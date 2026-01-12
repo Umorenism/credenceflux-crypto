@@ -64,7 +64,7 @@ import GetStarted from "./components/pages/GetStaretd";
 import Withdrawal from "./components/pages/Withdrawal";
 import TradingRecords from "./components/pages/TradingRecords";
 import Transactions from "./components/pages/Transaction";
-import Trade from "./components/pages/Trade";
+// import Trade from "./components/pages/Trade";
 import RecentTrades from "./components/pages/RecentTrades";
 import JoinTrade from "./components/pages/JoinTrade";
 import Referrals from "./components/pages/Referrals";
@@ -73,6 +73,7 @@ import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import TwoFASetup from "./components/pages/TwoFASetup";
 import Investments from "./components/pages/Investments";
+import Profile from "./components/pages/Profile";
 
 function App() {
   return (
@@ -88,7 +89,7 @@ function App() {
         {/* PROTECTED DASHBOARD ROUTES */}
         <Route
           element={
-              // <ProtectedRoute>
+              //  <ProtectedRoute>
               <DashboardLayout />
             //  </ProtectedRoute>
           }
@@ -102,11 +103,12 @@ function App() {
           <Route path="/withdraw" element={<Withdrawal/>} />
           <Route path="/trading-records" element={<TradingRecords/>} />
           <Route path="/transactions" element={<Transactions/>} />
-          <Route path="/investments" element={<Investments/>} />
-          <Route path="/trade" element={<Trade/>} />
+          <Route path="/trade" element={<Investments/>} />
+          {/* <Route path="/trade" element={<Trade/>} /> */}
           <Route path="/recent-trades" element={<RecentTrades/>} />
           <Route path="/join-trade" element={<JoinTrade/>} />
           <Route path="/refer" element={<Referrals/>} />
+          <Route path="/profile" element={<Profile/>} />
           <Route path="/support" element={<Support/>} />
         </Route>
 
