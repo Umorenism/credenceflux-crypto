@@ -471,15 +471,7 @@ export default function TradingRecords() {
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50/70'} text-gray-900 dark:text-gray-100 transition-colors duration-300 relative`}>
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        className="fixed top-4 right-4 z-50 p-2.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg hover:scale-105 transition"
-        title="Toggle theme"
-      >
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
-
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 space-y-8 lg:space-y-10">
 
         {/* Header + Quick Stats */}

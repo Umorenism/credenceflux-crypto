@@ -1,45 +1,121 @@
-// import { BrowserRouter,Navigate, Routes, Route} from "react-router-dom";
+// // import { BrowserRouter,Navigate, Routes, Route} from "react-router-dom";
+// // import DashboardLayout from "./components/layouts/DashboardLayout";
+// // import Home from "./components/pages/Home";
+// // import Wallet from "./components/pages/Wallet";
+// // import Settings from "./components/pages/Settings";
+
+// // import Signup from "./components/pages/Signup";
+// // // import Login from "./components/pages/Login";
+
+// // import ProtectedRoute from "./components/auth/ProtectedRoute";
+// // import React from "react";
+// // import GetStarted from "./components/pages/GetStaretd";
+// // import NotFound from "./components/pages/PageNotFound";
+
+// // function App() {
+// //   return (
+// //     <BrowserRouter>
+// //       <Routes>
+
+// //         {/* ---------- PUBLIC ROUTES ---------- */}
+// //         <Route path="/" element={<GetStarted/>} />
+// //         <Route path="/signup" element={<Signup />} />
+// //         {/* <Route path="/login" element={<Login />} /> */}
+
+// //         {/* ---------- PROTECTED DASHBOARD ROUTES ---------- */}
+// //         <Route
+// //   element={
+// //     // <ProtectedRoute>
+// //       <DashboardLayout />
+// //     // </ProtectedRoute>
+// //   }
+// // >
+// //   <Route path="/" element={<Navigate to="/home" replace />} />
+// //   <Route path="/home" element={<Home />} />
+// //   <Route path="/wallet" element={<Wallet />} />
+// //   <Route path="/settings" element={<Settings />} />
+// // </Route>
+
+
+// //         {/* ---------- 404 PAGE ---------- */}
+// //         <Route path="*" element={<NotFound/>} />
+
+// //       </Routes>
+// //     </BrowserRouter>
+// //   );
+// // }
+
+// // export default App;
+
+
+
+
+
+// import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // import DashboardLayout from "./components/layouts/DashboardLayout";
 // import Home from "./components/pages/Home";
 // import Wallet from "./components/pages/Wallet";
-// import Settings from "./components/pages/Settings";
 
 // import Signup from "./components/pages/Signup";
-// // import Login from "./components/pages/Login";
-
 // import ProtectedRoute from "./components/auth/ProtectedRoute";
 // import React from "react";
-// import GetStarted from "./components/pages/GetStaretd";
 // import NotFound from "./components/pages/PageNotFound";
+// import GetStarted from "./components/pages/GetStaretd";
+// import Withdrawal from "./components/pages/Withdrawal";
+// import TradingRecords from "./components/pages/TradingRecords";
+// import Transactions from "./components/pages/Transaction";
+// // import Trade from "./components/pages/Trade";
+// import RecentTrades from "./components/pages/RecentTrades";
+// import JoinTrade from "./components/pages/JoinTrade";
+// import Referrals from "./components/pages/Referrals";
+// import Support from "./components/pages/Support";
+// import ForgotPassword from "./components/pages/ForgotPassword";
+// import ResetPassword from "./components/pages/ResetPassword";
+// import TwoFASetup from "./components/pages/TwoFASetup";
+// import Investments from "./components/pages/Investments";
+// import Profile from "./components/pages/Profile";
+// import CryptoPage from "./components/pages/CryptoPage";
 
 // function App() {
 //   return (
 //     <BrowserRouter>
 //       <Routes>
-
-//         {/* ---------- PUBLIC ROUTES ---------- */}
-//         <Route path="/" element={<GetStarted/>} />
+//         {/* PUBLIC ROUTES */}
 //         <Route path="/signup" element={<Signup />} />
-//         {/* <Route path="/login" element={<Login />} /> */}
+//         <Route path="/get-started" element={<GetStarted />} />
+//         <Route path="/forgot-password" element={<ForgotPassword />} />
+//         <Route path="/reset-password" element={<ResetPassword />} />
+//         <Route path="/fa-setup" element={<TwoFASetup />} />
 
-//         {/* ---------- PROTECTED DASHBOARD ROUTES ---------- */}
+//         {/* PROTECTED DASHBOARD ROUTES */}
 //         <Route
-//   element={
-//     // <ProtectedRoute>
-//       <DashboardLayout />
-//     // </ProtectedRoute>
-//   }
-// >
-//   <Route path="/" element={<Navigate to="/home" replace />} />
-//   <Route path="/home" element={<Home />} />
-//   <Route path="/wallet" element={<Wallet />} />
-//   <Route path="/settings" element={<Settings />} />
-// </Route>
+//           element={
+//                 //  <ProtectedRoute>
+//               <DashboardLayout />
+//               // </ProtectedRoute>
+//           }
+//         >
+//           {/* Redirect root "/" to "/home" */}
+//           <Route path="/" element={<Navigate to="/home" replace />} />
 
+//           {/* Nested routes inside DashboardLayout */}
+//           <Route path="/home" element={<Home />} />
+//           <Route path="/deposits" element={<Wallet />} />
+//           <Route path="/withdraw" element={<Withdrawal/>} />
+//           <Route path="/trading-records" element={<TradingRecords/>} />
+//           <Route path="/transactions" element={<Transactions/>} />
+//           <Route path="/trade" element={<Investments/>} />
+//           <Route path="/crypto" element={<CryptoPage/>} />
+//           {/* <Route path="/trade" element={<Trade/>} /> */}
+//           <Route path="/recent-trades" element={<RecentTrades/>} />
+//           <Route path="/join-trade" element={<JoinTrade/>} />
+//           <Route path="/refer" element={<Referrals/>} />
+//           <Route path="/profile" element={<Profile/>} />
+//           <Route path="/support" element={<Support/>} />
+//         </Route>
 
-//         {/* ---------- 404 PAGE ---------- */}
-//         <Route path="*" element={<NotFound/>} />
-
+//         {/* 404 PAGE */}
+//         <Route path="*" element={<NotFound />} />
 //       </Routes>
 //     </BrowserRouter>
 //   );
@@ -47,81 +123,81 @@
 
 // export default App;
 
-
-
-
-
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import DashboardLayout from "./components/layouts/DashboardLayout";
-import Home from "./components/pages/Home";
-import Wallet from "./components/pages/Wallet";
-
-import Signup from "./components/pages/Signup";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+                    
 import React from "react";
-import NotFound from "./components/pages/PageNotFound";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import DashboardLayout from "./components/layouts/DashboardLayout";
+
+// Public pages
 import GetStarted from "./components/pages/GetStaretd";
-import Withdrawal from "./components/pages/Withdrawal";
-import TradingRecords from "./components/pages/TradingRecords";
-import Transactions from "./components/pages/Transaction";
-// import Trade from "./components/pages/Trade";
-import RecentTrades from "./components/pages/RecentTrades";
-import JoinTrade from "./components/pages/JoinTrade";
-import Referrals from "./components/pages/Referrals";
-import Support from "./components/pages/Support";
+import Signup from "./components/pages/Signup";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import TwoFASetup from "./components/pages/TwoFASetup";
+import NotFound from "./components/pages/PageNotFound";
+
+// Dashboard pages
+import Home from "./components/pages/Home";
+import Wallet from "./components/pages/Wallet";
+import Withdrawal from "./components/pages/Withdrawal";
+import TradingRecords from "./components/pages/TradingRecords";
+import Transactions from "./components/pages/Transaction";
 import Investments from "./components/pages/Investments";
+import CryptoPage from "./components/pages/CryptoPage";
+import RecentTrades from "./components/pages/RecentTrades";
+import JoinTrade from "./components/pages/JoinTrade";
+import Referrals from "./components/pages/Referrals";
 import Profile from "./components/pages/Profile";
+import Support from "./components/pages/Support";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC ROUTES */}
-        <Route path="/signup" element={<Signup />} />
+
+        {/* ---------- PUBLIC ROUTES ---------- */}
+        <Route path="/" element={<GetStarted />} />
         <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/fa-setup" element={<TwoFASetup />} />
 
-        {/* PROTECTED DASHBOARD ROUTES */}
-        <Route
-          element={
-              //  <ProtectedRoute>
-              <DashboardLayout />
-            //  </ProtectedRoute>
-          }
-        >
-          {/* Redirect root "/" to "/home" */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+        {/* ---------- PROTECTED DASHBOARD ---------- */}
+        {/* <Route element={<ProtectedRoute />}> */}
+        <Route>
+          <Route element={<DashboardLayout />}>
 
-          {/* Nested routes inside DashboardLayout */}
-          <Route path="/home" element={<Home />} />
-          <Route path="/wallet" element={<Wallet />} />
-          <Route path="/withdraw" element={<Withdrawal/>} />
-          <Route path="/trading-records" element={<TradingRecords/>} />
-          <Route path="/transactions" element={<Transactions/>} />
-          <Route path="/trade" element={<Investments/>} />
-          {/* <Route path="/trade" element={<Trade/>} /> */}
-          <Route path="/recent-trades" element={<RecentTrades/>} />
-          <Route path="/join-trade" element={<JoinTrade/>} />
-          <Route path="/refer" element={<Referrals/>} />
-          <Route path="/profile" element={<Profile/>} />
-          <Route path="/support" element={<Support/>} />
+            {/* Default dashboard entry */}
+            <Route path="/dashboard" element={<Navigate to="/home" replace />} />
+
+            <Route path="/home" element={<Home />} />
+            <Route path="/deposits" element={<Wallet />} />
+            <Route path="/withdraw" element={<Withdrawal />} />
+            <Route path="/trading-records" element={<TradingRecords />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/trade" element={<Investments />} />
+            <Route path="/crypto" element={<CryptoPage />} />
+            <Route path="/recent-trades" element={<RecentTrades />} />
+            <Route path="/join-trade" element={<JoinTrade />} />
+            <Route path="/refer" element={<Referrals />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/support" element={<Support />} />
+
+          </Route>
         </Route>
 
-        {/* 404 PAGE */}
+        {/* ---------- 404 ---------- */}
         <Route path="*" element={<NotFound />} />
+
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
-
-                    
             
             
             

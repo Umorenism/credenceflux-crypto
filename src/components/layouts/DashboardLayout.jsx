@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../Sidebar";
+
 import Header from "../Header";
 import { useTheme } from "../ui/ThemeContext"; // adjust path if needed
+import Sidebar from "../Sidebar";
 
 export default function DashboardLayout() {
   const { theme } = useTheme(); // 'light' | 'dark'
@@ -24,7 +25,7 @@ export default function DashboardLayout() {
       `}
     >
       {/* Sidebar */}
-      <Sidebar 
+      <Sidebar
         isOpen={isSidebarOpen} 
         closeSidebar={closeSidebar} 
       />

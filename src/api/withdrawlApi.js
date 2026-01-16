@@ -6,7 +6,7 @@ import { apiClient } from "./apiClient";
  */
 export const createWithdrawal = (data) => {
   return apiClient.post("/api/withdrawals", {
-    amount: data.amount,               // number or string – keep consistent with backend
+    amount: data.amount,              
     cryptocurrency: data.cryptocurrency,
     walletAddress: data.walletAddress,
   });

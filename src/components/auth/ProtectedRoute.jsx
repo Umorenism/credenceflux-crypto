@@ -1,11 +1,15 @@
-import { Navigate } from "react-router-dom";
 
-export default function ProtectedRoute({ children }) {
-  const isLoggedIn = localStorage.getItem("auth_token");
 
-  if (!isLoggedIn) {
-    return <Navigate to="/get-started" />;
+
+
+import { Navigate, Outlet } from "react-router-dom";
+
+export default function ProtectedRoute() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/get-started" replace />;
   }
 
-  return children;
+  return <Outlet />;
 }

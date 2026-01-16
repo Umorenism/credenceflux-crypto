@@ -48,14 +48,7 @@ export default function Support() {
         theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'
       } text-gray-900 dark:text-gray-100 transition-colors duration-300 relative overflow-hidden`}
     >
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        className="fixed top-5 right-5 z-50 p-3 rounded-full bg-white dark:bg-gray-800 shadow-md dark:shadow-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-        aria-label="Toggle light/dark mode"
-      >
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
+     
 
       {/* Subtle animated grid background – toned down in light mode */}
       <div className="fixed inset-0 opacity-[0.03] dark:opacity-10 pointer-events-none -z-10">
