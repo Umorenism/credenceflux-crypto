@@ -1,8 +1,14 @@
 
+
+
+
+
+
 // Withdrawal.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { createWithdrawal, getWithdrawals } from '../../api/withdrawlApi';
+import { apiClient } from '../../api/apiClient'; // for profile
 import { useTheme } from '../ui/ThemeContext';
 
 export default function Withdrawal() {
@@ -11,6 +17,7 @@ export default function Withdrawal() {
   const [amount, setAmount] = useState('');
   const [cryptocurrency, setCryptocurrency] = useState('USDT');
   const [address, setAddress] = useState('');
+  const [balance, setBalance] = useState(0); // user balance from profile
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -26,8 +33,22 @@ export default function Withdrawal() {
   ];
 
   useEffect(() => {
+    fetchProfile();
     fetchHistory();
   }, []);
+
+  // Fetch user profile to get total earnings
+  const fetchProfile = async () => {
+    try {
+      const res = await apiClient.get('/api/users/profile');
+      if (res?.data?.data) {
+        setBalance(res.data.data.totalEarnings || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile', err);
+      setBalance(0);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -56,30 +77,45 @@ export default function Withdrawal() {
       setError('Please enter a valid amount greater than 0');
       return;
     }
+
     if (!address.trim()) {
       setError('Wallet address is required');
       return;
     }
 
+    if (parsedAmount > balance) {
+      setError(`Insufficient earnings. Available: ${balance.toFixed(8)} ${cryptocurrency}`);
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await createWithdrawal({
-        cryptoAmount: parsedAmount,
+      const payload = {
+        amount: parseFloat(parsedAmount.toFixed(8)),
         cryptocurrency,
         walletAddress: address.trim(),
-      });
+      };
+
+      console.log('Creating withdrawal request:', payload);
+
+      const res = await createWithdrawal(payload);
+      console.log('Withdrawal response:', res);
 
       if (res?.message) {
-        setError(res.message.includes('Insufficient') ? res.message : '');
-      } else {
+        setError(res.message);
+      } else if (res?.success) {
         setMessage('Withdrawal request submitted! (Pending admin approval)');
         setAmount('');
         setAddress('');
         setCryptocurrency('USDT');
         fetchHistory();
+        fetchProfile(); // refresh balance
+      } else {
+        setError('Failed to submit withdrawal. Try again.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit withdrawal');
+      console.error('Withdrawal API error:', err);
+      setError(err.response?.data?.message || err.message || 'Server error');
     } finally {
       setLoading(false);
     }
@@ -90,10 +126,14 @@ export default function Withdrawal() {
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-3xl md:text-4xl font-bold mb-8 text-center text-orange-600 dark:text-orange-400"
+        className="text-3xl md:text-4xl font-bold mb-4 text-center text-orange-600 dark:text-orange-400"
       >
         Withdraw Earnings
       </motion.h1>
+
+      <p className="text-center mb-6 text-gray-700 dark:text-gray-300">
+        Available Earnings: <span className="font-semibold">{balance.toFixed(8)} {cryptocurrency}</span>
+      </p>
 
       <div className="max-w-4xl mx-auto space-y-10">
         {/* Withdrawal Form */}
@@ -103,7 +143,6 @@ export default function Withdrawal() {
           className="bg-white dark:bg-gray-900/95 p-6 sm:p-8 rounded-2xl border border-gray-200 dark:border-gray-800/60 shadow-lg dark:shadow-2xl transition-all duration-300"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Amount (from profits)
@@ -120,7 +159,6 @@ export default function Withdrawal() {
               />
             </div>
 
-            {/* Cryptocurrency */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Cryptocurrency
@@ -139,7 +177,6 @@ export default function Withdrawal() {
               </select>
             </div>
 
-            {/* Wallet Address */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Wallet Address
@@ -154,7 +191,6 @@ export default function Withdrawal() {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading || !amount || parseFloat(amount) <= 0 || !address.trim()}

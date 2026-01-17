@@ -43,8 +43,8 @@ function App() {
         <Route path="/fa-setup" element={<TwoFASetup />} />
 
         {/* ---------- PROTECTED DASHBOARD ---------- */}
-        {/* <Route element={<ProtectedRoute />}> */}
-        <Route>
+         <Route element={<ProtectedRoute />}> 
+        
           <Route element={<DashboardLayout />}>
 
             {/* Default dashboard entry */}

@@ -1,19 +1,50 @@
 import { apiClient } from './apiClient';
 
-export const getCryptoChart = (cryptoId) => {
-  return apiClient.get(`/api/crypto/${cryptoId}/chart`);
+/**
+ * Fetch crypto chart data for a specific coin
+ * GET /api/crypto/:cryptoId/chart
+ */
+export const getCryptoChart = async (cryptoId) => {
+  try {
+    const res = await apiClient.get(`/api/crypto/${cryptoId}/chart`);
+    console.log('getCryptoChart response:', res);
+    return res;
+  } catch (err) {
+    console.error('getCryptoChart error:', err);
+    throw err;
+  }
 };
 
-// Optional — if you want dynamic crypto list later
-export const getCryptoPrices = () => {
-  return apiClient.get('/api/crypto/prices');
+/**
+ * Fetch current prices for all supported cryptocurrencies
+ * GET /api/crypto/prices
+ */
+export const getCryptoPrices = async () => {
+  try {
+    const res = await apiClient.get('/api/crypto/prices');
+    console.log('getCryptoPrices response:', res);
+    return res;
+  } catch (err) {
+    console.error('getCryptoPrices error:', err);
+    throw err;
+  }
 };
 
-// Optional — price conversion
-export const convertUsdToCrypto = (amount, cryptoId) => {
-  return apiClient.post('/api/crypto/convert', {
-    amount,
-    cryptoId,
-    direction: 'usdToCrypto',
-  });
+/**
+ * Convert USD amount to a specific crypto
+ * POST /api/crypto/convert
+ */
+export const convertUsdToCrypto = async ({ amount, cryptoId }) => {
+  try {
+    const res = await apiClient.post('/api/crypto/convert', {
+      amount,
+      cryptoId,
+      direction: 'usdToCrypto',
+    });
+    console.log('convertUsdToCrypto response:', res);
+    return res;
+  } catch (err) {
+    console.error('convertUsdToCrypto error:', err);
+    throw err;
+  }
 };
